@@ -10,6 +10,7 @@ AM_SRCS := nemu/trm.c \
            nemu/mpe.c \
            nemu/isa/$(ISA)/boot/start.S
 
+CFLAGS    += -fdata-sections -ffunction-sections
 LDFLAGS   += -L $(AM_HOME)/am/src/nemu/scripts
 LDFLAGS   += -T $(AM_HOME)/am/src/nemu/isa/$(ISA)/boot/loader.ld
 LDFLAGS   += --gc-sections -e _start

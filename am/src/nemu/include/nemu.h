@@ -19,13 +19,13 @@
 # define SERIAL_PORT  0x3f8
 # define KBD_ADDR     0x60
 # define RTC_ADDR     0x48
-# define SCREEN_ADDR  0x100
+# define VGACTL_ADDR  0x100
 # define AUDIO_ADDR   0x200
 #else
 # define SERIAL_PORT  0xa10003f8
 # define KBD_ADDR     0xa1000060
 # define RTC_ADDR     0xa1000048
-# define SCREEN_ADDR  0xa1000100
+# define VGACTL_ADDR  0xa1000100
 # define AUDIO_ADDR   0xa1000200
 #endif
 

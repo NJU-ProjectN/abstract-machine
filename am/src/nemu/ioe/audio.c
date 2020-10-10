@@ -8,6 +8,9 @@
 #define AUDIO_INIT_ADDR      (AUDIO_ADDR + 0x10)
 #define AUDIO_COUNT_ADDR     (AUDIO_ADDR + 0x14)
 
+void __am_audio_init() {
+}
+
 void __am_audio_config(AM_AUDIO_CONFIG_T *cfg) {
   cfg->present = false;
 }

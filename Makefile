@@ -87,7 +87,7 @@ ASFLAGS  += -MMD $(INCFLAGS)
 
 ## 4. Arch-Specific Configurations
 
-### Paste in arch-specific configurations (e.g., from `am/arch/x86_64-qemu.mk`)
+### Paste in arch-specific configurations (e.g., from `scripts/x86_64-qemu.mk`)
 -include $(AM_HOME)/scripts/$(ARCH).mk
 
 ## 5. Compilation Rules

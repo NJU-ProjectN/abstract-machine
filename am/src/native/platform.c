@@ -8,7 +8,7 @@
 
 #define MAX_CPU 16
 #define TRAP_PAGE_START (void *)0x100000
-#define PMEM_START (void *)0x3000000  // for nanos-lite with vme disabled
+#define PMEM_START (void *)0x1000000  // for nanos-lite with vme disabled
 #define PMEM_SIZE (128 * 1024 * 1024)
 static int pmem_fd = 0;
 static void *pmem = NULL;

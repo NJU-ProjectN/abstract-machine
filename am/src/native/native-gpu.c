@@ -1,8 +1,15 @@
 #include <am.h>
 #include <SDL2/SDL.h>
 
-#define W    400
-#define H    300
+//#define MODE_800x600
+#ifdef MODE_800x600
+# define W    800
+# define H    600
+#else
+# define W    400
+# define H    300
+#endif
+
 #define FPS   60
 
 static SDL_Window *window = NULL;
@@ -23,7 +30,13 @@ static Uint32 texture_sync(Uint32 interval, void *param) {
 
 void __am_gpu_init() {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-  SDL_CreateWindowAndRenderer(W * 2, H * 2, 0, &window, &renderer);
+  SDL_CreateWindowAndRenderer(
+#ifdef MODE_800x600
+      W, H,
+#else
+      W * 2, H * 2,
+#endif
+      0, &window, &renderer);
   SDL_SetWindowTitle(window, "Native Application");
   texture = SDL_CreateTexture(renderer,
     SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, W, H);

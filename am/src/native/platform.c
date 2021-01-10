@@ -197,13 +197,13 @@ int __am_is_sigmask_sti(sigset_t *s) {
 }
 
 void __am_pmem_protect() {
-  int ret = mprotect(PMEM_START, PMEM_SIZE, PROT_NONE);
-  assert(ret == 0);
+//  int ret = mprotect(PMEM_START, PMEM_SIZE, PROT_NONE);
+//  assert(ret == 0);
 }
 
 void __am_pmem_unprotect() {
-  int ret = mprotect(PMEM_START, PMEM_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC);
-  assert(ret == 0);
+//  int ret = mprotect(PMEM_START, PMEM_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC);
+//  assert(ret == 0);
 }
 
 // This dummy function will be called in trm.c.

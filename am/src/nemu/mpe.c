@@ -12,6 +12,6 @@ int cpu_current() {
   return 0;
 }
 
-int atomic_xchg(int *addr, intptr_t newval) {
+int atomic_xchg(int *addr, int newval) {
   return 0;
 }

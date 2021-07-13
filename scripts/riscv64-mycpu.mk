@@ -6,6 +6,8 @@ LDFLAGS       += -melf64lriscv
 
 AM_SRCS := mycpu/start.S \
            mycpu/trm.c \
+           mycpu/libgcc/muldi3.S \
+           mycpu/libgcc/div.S \
            mycpu/ioe.c \
            mycpu/timer.c \
            mycpu/input.c

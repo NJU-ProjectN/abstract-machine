@@ -16,3 +16,4 @@ _*
 *~
 build/
 !.gitignore
+.vscode

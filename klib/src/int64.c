@@ -705,3 +705,25 @@ COMPILER_RT_ABI si_int __ctzsi2(si_int a) {
   //     }
   return r + ((2 - (x >> 1)) & -((x & 1) == 0));
 }
+
+typedef int si_int;
+typedef long long di_int;
+typedef unsigned su_int;
+#define CHAR_BIT __CHAR_BIT__
+
+
+si_int __ctzdi2(di_int a) {
+  dwords x;
+  x.all = a;
+  const si_int f = -(x.s.low == 0);
+  return __ctzsi2((x.s.high & f) | (x.s.low & ~f)) +
+         (f & ((si_int)(sizeof(si_int) * CHAR_BIT)));
+}
+
+si_int __clzdi2(di_int a) {
+  dwords x;
+  x.all = a;
+  const si_int f = -(x.s.high == 0);
+  return __clzsi2((x.s.high & ~f) | (x.s.low & f)) +
+         (f & ((si_int)(sizeof(si_int) * CHAR_BIT)));
+}

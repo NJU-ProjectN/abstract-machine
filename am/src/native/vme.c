@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+#include <search.h>
 #include "platform.h"
 
 #define USER_SPACE RANGE(0x40000000, 0xc0000000)
@@ -8,10 +10,17 @@ typedef struct PageMap {
   struct PageMap *next;
   int prot;
   int is_mapped;
+  char key[32];  // used for hsearch_r()
 } PageMap;
 
+typedef struct VMHead {
+  PageMap *head;
+  struct hsearch_data hash;
+  int nr_page;
+} VMHead;
+
 #define list_foreach(p, head) \
-  for (p = ((PageMap *)(head))->next; p != NULL; p = p->next)
+  for (p = (PageMap *)(head); p != NULL; p = p->next)
 
 extern int __am_pgsize;
 static int vme_enable = 0;
@@ -27,7 +36,14 @@ bool vme_init(void* (*pgalloc_f)(int), void (*pgfree_f)(void*)) {
 
 void protect(AddrSpace *as) {
   assert(as != NULL);
-  as->ptr = pgalloc(__am_pgsize); // used as head of the list
+  VMHead *h = pgalloc(__am_pgsize); // used as head of the list
+  assert(h != NULL);
+  memset(h, 0, sizeof(*h));
+  int max_pg = (USER_SPACE.end - USER_SPACE.start) / __am_pgsize;
+  int ret = hcreate_r(max_pg, &h->hash);
+  assert(ret != 0);
+
+  as->ptr = h;
   as->pgsize = __am_pgsize;
   as->area = USER_SPACE;
 }
@@ -38,13 +54,14 @@ void unprotect(AddrSpace *as) {
 void __am_switch(Context *c) {
   if (!vme_enable) return;
 
-  PageMap *head = c->vm_head;
-  if (head == thiscpu->vm_head) return;
+  VMHead *head = c->vm_head;
+  VMHead *now_head = thiscpu->vm_head;
+  if (head == now_head) goto end;
 
   PageMap *pp;
-  if (thiscpu->vm_head != NULL) {
+  if (now_head != NULL) {
     // munmap all mappings
-    list_foreach(pp, thiscpu->vm_head) {
+    list_foreach(pp, now_head->head) {
       if (pp->is_mapped) {
         __am_pmem_unmap(pp->va);
         pp->is_mapped = false;
@@ -54,13 +71,14 @@ void __am_switch(Context *c) {
 
   if (head != NULL) {
     // mmap all mappings
-    list_foreach(pp, head) {
+    list_foreach(pp, head->head) {
       assert(IN_RANGE(pp->va, USER_SPACE));
       __am_pmem_map(pp->va, pp->pa, pp->prot);
       pp->is_mapped = true;
     }
   }
 
+end:
   thiscpu->vm_head = head;
 }
 
@@ -70,23 +88,30 @@ void map(AddrSpace *as, void *va, void *pa, int prot) {
   assert((uintptr_t)pa % __am_pgsize == 0);
   assert(as != NULL);
   PageMap *pp = NULL;
-  PageMap *vm_head = as->ptr;
+  VMHead *vm_head = as->ptr;
   assert(vm_head != NULL);
-  list_foreach(pp, vm_head) {
-    if (pp->va == va) break;
-  }
-
-  if (pp == NULL) {
+  char buf[32];
+  snprintf(buf, 32, "%x", va);
+  ENTRY item = { .key = buf };
+  ENTRY *item_find;
+  hsearch_r(item, FIND, &item_find, &vm_head->hash);
+  if (item_find == NULL) {
     pp = pgalloc(__am_pgsize); // this will waste memory, any better idea?
+    snprintf(pp->key, 32, "%x", va);
+    item.key = pp->key;
+    item.data = pp;
+    int ret = hsearch_r(item, ENTER, &item_find, &vm_head->hash);
+    assert(ret != 0);
+    vm_head->nr_page ++;
+  } else {
+    pp = item_find->data;
   }
   pp->va = va;
   pp->pa = pa;
   pp->prot = prot;
   pp->is_mapped = false;
-  // add after to vm_head to keep vm_head unchanged,
-  // since vm_head is a key to describe an address space
-  pp->next = vm_head->next;
-  vm_head->next = pp;
+  pp->next = vm_head->head;
+  vm_head->head = pp;
 
   if (vm_head == thiscpu->vm_head) {
     // enforce the map immediately

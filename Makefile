@@ -35,6 +35,11 @@ ARCH_SPLIT = $(subst -, ,$(ARCH))
 ISA        = $(word 1,$(ARCH_SPLIT))
 PLATFORM   = $(word 2,$(ARCH_SPLIT))
 
+### Check if there is something to build
+ifeq ($(flavor SRCS), undefined)
+  $(error Nothing to build)
+endif
+
 ### Checks end here
 endif
 
@@ -45,26 +50,28 @@ WORK_DIR  = $(shell pwd)
 DST_DIR   = $(WORK_DIR)/build/$(ARCH)
 $(shell mkdir -p $(DST_DIR))
 
-### Compilation targets (image or archive)
+### Compilation targets (a binary image or archive)
 IMAGE_REL = build/$(NAME)-$(ARCH)
 IMAGE     = $(abspath $(IMAGE_REL))
 ARCHIVE   = $(WORK_DIR)/build/$(NAME)-$(ARCH).a
 
-### Files to be linked: object files (`.o`) and libraries (`.a`)
+### Collect the files to be linked: object files (`.o`) and libraries (`.a`)
 OBJS      = $(addprefix $(DST_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
 LIBS     := $(sort $(LIBS) am klib) # lazy evaluation ("=") causes infinite recursions
 LINKAGE   = $(OBJS) \
   $(addsuffix -$(ARCH).a, $(join \
     $(addsuffix /build/, $(addprefix $(AM_HOME)/, $(LIBS))), \
-    $(LIBS) \
-))
+    $(LIBS) ))
 
 ## 3. General Compilation Flags
 
+### Enable Ccache acceleration when available
+CCACHE    = $(if $(shell which ccache),ccache,)
+
 ### (Cross) compilers, e.g., mips-linux-gnu-g++
-AS        = $(CROSS_COMPILE)gcc
-CC        = $(CROSS_COMPILE)gcc
-CXX       = $(CROSS_COMPILE)g++
+AS        = $(CCACHE) $(CROSS_COMPILE)gcc
+CC        = $(CCACHE) $(CROSS_COMPILE)gcc
+CXX       = $(CCACHE) $(CROSS_COMPILE)g++
 LD        = $(CROSS_COMPILE)ld
 OBJDUMP   = $(CROSS_COMPILE)objdump
 OBJCOPY   = $(CROSS_COMPILE)objcopy
@@ -90,6 +97,12 @@ ASFLAGS  += -MMD $(INCFLAGS)
 ### Paste in arch-specific configurations (e.g., from `scripts/x86_64-qemu.mk`)
 -include $(AM_HOME)/scripts/$(ARCH).mk
 
+### Fall back to native gcc/binutils if there is no cross compiler
+ifeq ($(wildcard $(shell which $(CC))),)
+  $(info #  $(CC) not found; fall back to default gcc and binutils)
+  CROSS_COMPILE := 
+endif
+
 ## 5. Compilation Rules
 
 ### Rule (compile): a single `.c` -> `.o` (gcc)
@@ -107,7 +120,7 @@ $(DST_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@) && echo + CXX $<
 	@$(CXX) -std=c++17 $(CXXFLAGS) -c -o $@ $(realpath $<)
 
-### Rule (compile): a single `.S` -> `.o` (gcc, which calls as)
+### Rule (compile): a single `.S` -> `.o` (gcc, which preprocesses and calls as)
 $(DST_DIR)/%.o: %.S
 	@mkdir -p $(dir $@) && echo + AS $<
 	@$(AS) $(ASFLAGS) -c -o $@ $(realpath $<)

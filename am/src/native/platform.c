@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <sys/mman.h>
 #include <sys/auxv.h>
+#include <dlfcn.h>
 #include <elf.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -9,18 +10,19 @@
 #define MAX_CPU 16
 #define TRAP_PAGE_START (void *)0x100000
 #define PMEM_START (void *)0x1000000  // for nanos-lite with vme disabled
-#define PMEM_SIZE (128 * 1024 * 1024)
+#define PMEM_SIZE (128 * 1024 * 1024) // 128MB
 static int pmem_fd = 0;
 static void *pmem = NULL;
 static ucontext_t uc_example = {};
 static int sys_pgsz;
+static void *(*memcpy_libc)(void *, const void *, size_t) = NULL;
 sigset_t __am_intr_sigmask = {};
 __am_cpu_t *__am_cpu_struct = NULL;
 int __am_ncpu = 0;
 int __am_pgsize;
 
 static void save_context_handler(int sig, siginfo_t *info, void *ucontext) {
-  memcpy(&uc_example, ucontext, sizeof(uc_example));
+  memcpy_libc(&uc_example, ucontext, sizeof(uc_example));
 }
 
 static void save_example_context() {
@@ -30,7 +32,8 @@ static void save_example_context() {
   // registers. So we save the example context during signal handling
   // to get a context with everything valid.
   struct sigaction s;
-  memset(&s, 0, sizeof(s));
+  void *(*memset_libc)(void *, int, size_t) = dlsym(RTLD_NEXT, "memset");
+  memset_libc(&s, 0, sizeof(s));
   s.sa_sigaction = save_context_handler;
   s.sa_flags = SA_SIGINFO;
   int ret = sigaction(SIGUSR1, &s, NULL);
@@ -79,6 +82,10 @@ static void init_platform() {
       MAP_SHARED | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
   assert(ret != (void *)-1);
 
+  // save the address of memcpy() in glibc, since it may be linked with klib
+  memcpy_libc = dlsym(RTLD_NEXT, "memcpy");
+  assert(memcpy_libc != NULL);
+
   // remap writable sections as MAP_SHARED
   Elf64_Phdr *phdr = (void *)getauxval(AT_PHDR);
   int phnum = (int)getauxval(AT_PHNUM);
@@ -96,12 +103,15 @@ static void init_platform() {
       assert(temp_mem != (void *)-1);
 
       // save data and bss sections
-      memcpy(temp_mem, vaddr_align, size);
+      memcpy_libc(temp_mem, vaddr_align, size);
 
-      // save the addresses of library functions which will be used after munamp()
+      // save the address of mmap() which will be used after munamp(),
       // since calling the library functions requires accessing GOT, which will be unmapped
-      void *(*volatile mmap_libc)(void *, size_t, int, int, int, off_t) = &mmap;
-      void *(*volatile memcpy_libc)(void *, const void *, size_t) = &memcpy;
+      void *(*mmap_libc)(void *, size_t, int, int, int, off_t) = dlsym(RTLD_NEXT, "mmap");
+      assert(mmap_libc != NULL);
+      // load the address of memcpy() on stack, which can still be accessed
+      // after the data section is unmapped
+      void *(*volatile memcpy_libc_temp)(void *, const void *, size_t) = memcpy_libc;
 
       // unmap the data and bss sections
       ret2 = munmap(vaddr_align, size);
@@ -113,7 +123,7 @@ static void init_platform() {
       assert(ret == vaddr_align);
 
       // restore the data in the sections
-      memcpy_libc(vaddr_align, temp_mem, size);
+      memcpy_libc_temp(vaddr_align, temp_mem, size);
 
       // unmap the temporary memory
       ret2 = munmap(temp_mem, size);
@@ -185,15 +195,19 @@ void __am_pmem_unmap(void *va) {
 }
 
 void __am_get_example_uc(Context *r) {
-  memcpy(&r->uc, &uc_example, sizeof(uc_example));
+  memcpy_libc(&r->uc, &uc_example, sizeof(uc_example));
 }
 
 void __am_get_intr_sigmask(sigset_t *s) {
-  memcpy(s, &__am_intr_sigmask, sizeof(__am_intr_sigmask));
+  memcpy_libc(s, &__am_intr_sigmask, sizeof(__am_intr_sigmask));
 }
 
 int __am_is_sigmask_sti(sigset_t *s) {
   return !sigismember(s, SIGVTALRM);
+}
+
+void __am_send_kbd_intr() {
+  kill(getpid(), SIGUSR1);
 }
 
 void __am_pmem_protect() {

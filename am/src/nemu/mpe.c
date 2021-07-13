@@ -1,7 +1,10 @@
 #include <am.h>
+#include <stdatomic.h>
+#include <klib-macros.h>
 
 bool mpe_init(void (*entry)()) {
-  return false;
+  entry();
+  panic("MPE entry returns");
 }
 
 int cpu_count() {
@@ -13,5 +16,5 @@ int cpu_current() {
 }
 
 int atomic_xchg(int *addr, int newval) {
-  return 0;
+  return atomic_exchange(addr, newval);
 }

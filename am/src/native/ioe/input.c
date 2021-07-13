@@ -1,6 +1,5 @@
 #include <am.h>
 #include <SDL2/SDL.h>
-#include "platform.h"
 
 #define KEYDOWN_MASK 0x8000
 
@@ -31,7 +30,8 @@ static int event_thread(void *args) {
           key_queue[key_r] = am_code;
           key_r = (key_r + 1) % KEY_QUEUE_LEN;
           SDL_UnlockMutex(key_queue_lock);
-          kill(getpid(), SIGUSR1);
+          void __am_send_kbd_intr();
+          __am_send_kbd_intr();
         }
         break;
       }

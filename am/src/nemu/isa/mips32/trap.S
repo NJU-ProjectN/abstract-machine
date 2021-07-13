@@ -26,12 +26,12 @@ f(30) f(31)
 .set noat
 .globl __am_asm_trap
 __am_asm_trap:
-  move $k0, $sp
+  move $k1, $sp
   addiu $sp, $sp, -CONTEXT_SIZE
 
   MAP(REGS, PUSH)
 
-  sw $k0, OFFSET_SP($sp)
+  sw $k1, OFFSET_SP($sp)
 
   mflo $t0
   mfhi $t1

@@ -1,13 +1,9 @@
 #include <sys/time.h>
+#include <string.h>
 #include "platform.h"
 
 #define TIMER_HZ 100
-
-#define YIELD_INSTR "0xff,0x14,0x25,0x08,0x00,0x10,0x00" // callq *0x100008
-#define YIELD_INSTR_LEN ((sizeof(YIELD_INSTR)) / 5)  // sizeof() counts the '\0' byte
-#define SYSCALL_INSTR_LEN YIELD_INSTR_LEN
-
-static_assert(SYSCALL_INSTR_LEN == 7);
+#define SYSCALL_INSTR_LEN 7
 
 static Context* (*user_handler)(Event, Context*) = NULL;
 
@@ -23,13 +19,20 @@ static void irq_handle(Context *c) {
   c->vm_head = thiscpu->vm_head;
   c->ksp = thiscpu->ksp;
 
+  if (thiscpu->ev.event == EVENT_ERROR) {
+    uintptr_t rip = c->uc.uc_mcontext.gregs[REG_RIP];
+    printf("Unhandle signal '%s' at rip = %p, badaddr = %p, cause = 0x%x\n",
+        thiscpu->ev.msg, rip, thiscpu->ev.ref, thiscpu->ev.cause);
+    assert(0);
+  }
   c = user_handler(thiscpu->ev, c);
   assert(c != NULL);
 
   __am_switch(c);
 
   // magic call to restore context
-  asm volatile("call *0x100010" : : "a" (c));
+  void (*p)(Context *c) = (void *)(uintptr_t)0x100008;
+  p(c);
   __am_panic_on_return();
 }
 
@@ -55,9 +58,8 @@ static void setup_stack(uintptr_t event, ucontext_t *uc) {
 
   if (trap_from_user) __am_pmem_unprotect();
 
-  // skip the instructions causing SIGSEGV for syscall and yield
+  // skip the instructions causing SIGSEGV for syscall
   if (event == EVENT_SYSCALL) { rip += SYSCALL_INSTR_LEN; }
-  else if (event == EVENT_YIELD) { rip += YIELD_INSTR_LEN; }
   uc->uc_mcontext.gregs[REG_RIP] = (uintptr_t)rip;
 
   // switch to kernel stack if we were previously in user space
@@ -80,7 +82,7 @@ static void setup_stack(uintptr_t event, ucontext_t *uc) {
 }
 
 static void iret(ucontext_t *uc) {
-  Context *c = (void *)uc->uc_mcontext.gregs[REG_RAX];
+  Context *c = (void *)uc->uc_mcontext.gregs[REG_RDI];
   // restore the context
   *uc = c->uc;
   thiscpu->ksp = c->ksp;
@@ -92,13 +94,13 @@ static void sig_handler(int sig, siginfo_t *info, void *ucontext) {
   thiscpu->ev.event = EVENT_ERROR;
   switch (sig) {
     case SIGUSR1: thiscpu->ev.event = EVENT_IRQ_IODEV; break;
+    case SIGUSR2: thiscpu->ev.event = EVENT_YIELD; break;
     case SIGVTALRM: thiscpu->ev.event = EVENT_IRQ_TIMER; break;
     case SIGSEGV:
       if (info->si_code == SEGV_ACCERR) {
         switch ((uintptr_t)info->si_addr) {
           case 0x100000: thiscpu->ev.event = EVENT_SYSCALL; break;
-          case 0x100008: thiscpu->ev.event = EVENT_YIELD; break;
-          case 0x100010: iret(ucontext); return;
+          case 0x100008: iret(ucontext); return;
         }
       }
       if (__am_in_userspace(info->si_addr)) {
@@ -112,15 +114,14 @@ static void sig_handler(int sig, siginfo_t *info, void *ucontext) {
         }
         thiscpu->ev.ref = (uintptr_t)info->si_addr;
       }
-
-      if (thiscpu->ev.event == EVENT_ERROR) {
-        uintptr_t rip = ((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_RIP];
-        printf("Unhandle SIGSEGV at rip = %p, badaddr = %p\n", rip, info->si_addr);
-      }
       break;
-    default: assert(0);
   }
-  assert(thiscpu->ev.event != EVENT_ERROR);
+
+  if (thiscpu->ev.event == EVENT_ERROR) {
+    thiscpu->ev.ref = (uintptr_t)info->si_addr;
+    thiscpu->ev.cause = (uintptr_t)info->si_code;
+    thiscpu->ev.msg = strsignal(sig);
+  }
   setup_stack(thiscpu->ev.event, ucontext);
 }
 
@@ -135,6 +136,8 @@ static void install_signal_handler() {
   int ret = sigaction(SIGVTALRM, &s, NULL);
   assert(ret == 0);
   ret = sigaction(SIGUSR1, &s, NULL);
+  assert(ret == 0);
+  ret = sigaction(SIGUSR2, &s, NULL);
   assert(ret == 0);
   ret = sigaction(SIGSEGV, &s, NULL);
   assert(ret == 0);
@@ -178,7 +181,7 @@ Context* kcontext(Area kstack, void (*entry)(void *), void *arg) {
 }
 
 void yield() {
-  asm volatile (".byte " YIELD_INSTR);
+  raise(SIGUSR2);
 }
 
 bool ienabled() {

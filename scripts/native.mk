@@ -5,20 +5,20 @@ AM_SRCS := native/trm.c \
            native/vme.c \
            native/mpe.c \
            native/platform.c \
-           native/native-input.c \
-           native/native-timer.c \
-           native/native-gpu.c \
-           native/native-audio.c \
+           native/ioe/input.c \
+           native/ioe/timer.c \
+           native/ioe/gpu.c \
+           native/ioe/audio.c \
 
 CFLAGS  += -fpie
 ASFLAGS += -fpie -pie
 
 image:
 	@echo + LD "->" $(IMAGE_REL)
-	@g++ -pie -o $(IMAGE) -Wl,--whole-archive $(LINKAGE) -Wl,-no-whole-archive -lSDL2
+	@g++ -pie -o $(IMAGE) -Wl,--whole-archive $(LINKAGE) -Wl,-no-whole-archive -lSDL2 -ldl
 
 run: image
 	$(IMAGE)
 
 gdb: image
-	gdb -ex "handle SIGUSR1 SIGSEGV noprint nostop" $(IMAGE)
+	gdb -ex "handle SIGUSR1 SIGUSR2 SIGSEGV noprint nostop" $(IMAGE)

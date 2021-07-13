@@ -7,6 +7,7 @@ static bool ioe_init_done = false;
 void __am_timer_init();
 void __am_gpu_init();
 void __am_input_init();
+void __am_audio_init();
 void __am_input_config(AM_INPUT_CONFIG_T *);
 void __am_timer_config(AM_TIMER_CONFIG_T *);
 void __am_timer_rtc(AM_TIMER_RTC_T *);
@@ -57,6 +58,7 @@ void __am_ioe_init() {
   __am_timer_init();
   __am_gpu_init();
   __am_input_init();
+  __am_audio_init();
   ioe_init_done = true;
 }
 

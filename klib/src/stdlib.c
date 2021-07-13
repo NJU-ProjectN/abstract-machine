@@ -30,7 +30,7 @@ int atoi(const char* nptr) {
 }
 
 void *malloc(size_t size) {
-  return NULL;
+  panic("Not implemented");
 }
 
 void free(void *ptr) {

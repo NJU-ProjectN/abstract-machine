@@ -14,7 +14,7 @@ static GateDesc32 idt[NR_IRQ];
 
 IRQS(IRQHANDLE_DECL)
 void __am_irqall();
-void __amkcontext_start();
+void __am_kcontext_start();
 
 void __am_irq_handle(struct trap_frame *tf) {
   Context *saved_ctx = &tf->saved_context;
@@ -141,13 +141,13 @@ Context* kcontext(Area kstack, void (*entry)(void *), void *arg) {
 
 #if __x86_64__
   ctx->cs     = KSEL(SEG_KCODE);
-  ctx->rip    = (uintptr_t)__amkcontext_start;
+  ctx->rip    = (uintptr_t)__am_kcontext_start;
   ctx->rflags = FL_IF;
   ctx->rsp    = (uintptr_t)kstack.end;
 #else
   ctx->ds     = KSEL(SEG_KDATA);
   ctx->cs     = KSEL(SEG_KCODE);
-  ctx->eip    = (uintptr_t)__amkcontext_start;
+  ctx->eip    = (uintptr_t)__am_kcontext_start;
   ctx->eflags = FL_IF;
   ctx->esp    = (uintptr_t)kstack.end;
 #endif

@@ -8,11 +8,10 @@ AM_SRCS := nemu/trm.c \
            nemu/isa/$(ISA)/trap.S \
            nemu/isa/$(ISA)/vme.c \
            nemu/mpe.c \
-           nemu/isa/$(ISA)/boot/start.S
+           nemu/isa/$(ISA)/start.S
 
 CFLAGS    += -fdata-sections -ffunction-sections
-LDFLAGS   += -L $(AM_HOME)/am/src/nemu/scripts
-LDFLAGS   += -T $(AM_HOME)/am/src/nemu/isa/$(ISA)/boot/loader.ld
+LDFLAGS   += -T $(AM_HOME)/scripts/platform/nemu.ld --defsym=_entry_offset=0x100000
 LDFLAGS   += --gc-sections -e _start
 NEMUFLAGS += -b -l $(shell dirname $(IMAGE).elf)/nemu-log.txt $(IMAGE).bin
 

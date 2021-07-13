@@ -1,7 +1,7 @@
 #include "x86-qemu.h"
 
-.globl __amkcontext_start
-__amkcontext_start:
+.globl __am_kcontext_start
+__am_kcontext_start:
   // rdi = arg, rsi = entry
   pushq $__am_panic_on_return
   jmpq *%rsi

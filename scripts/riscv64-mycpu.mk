@@ -10,7 +10,11 @@ AM_SRCS := mycpu/start.S \
            mycpu/libgcc/div.S \
            mycpu/ioe.c \
            mycpu/timer.c \
-           mycpu/input.c
+           mycpu/input.c \
+           mycpu/cte.c \
+           mycpu/trap.S \
+           mycpu/vme.c \
+           mycpu/mpe.c
 
 CFLAGS    += -fdata-sections -ffunction-sections
 LDFLAGS   += -T $(AM_HOME)/scripts/platform/nemu.ld --defsym=_pmem_start=0x80000000 --defsym=_entry_offset=0x0

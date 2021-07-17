@@ -363,6 +363,7 @@ uint32_t __inline __builtin_clzll(uint64_t value) {
 
 #include <am.h>
 
+#if !defined(__riscv) || defined(__riscv_m)
 /* Returns: a / b */
 
 COMPILER_RT_ABI di_int
@@ -409,6 +410,17 @@ __udivdi3(du_int a, du_int b)
 {
     return __udivmoddi4(a, b, 0);
 }
+
+/* Returns: a % b */
+
+COMPILER_RT_ABI du_int
+__umoddi3(du_int a, du_int b)
+{
+    du_int r;
+    __udivmoddi4(a, b, &r);
+    return r;
+}
+#endif
 
 
 COMPILER_RT_ABI du_int
@@ -619,16 +631,6 @@ __udivmoddi4(du_int a, du_int b, du_int* rem)
     if (rem)
         *rem = r.all;
     return q.all;
-}
-
-/* Returns: a % b */
-
-COMPILER_RT_ABI du_int
-__umoddi3(du_int a, du_int b)
-{
-    du_int r;
-    __udivmoddi4(a, b, &r);
-    return r;
 }
 
 // Returns: the number of leading 0-bits

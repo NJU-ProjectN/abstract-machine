@@ -1,5 +1,5 @@
 #include <am.h>
-#include <x86.h>
+#include <x86/x86.h>
 #include <klib.h>
 
 #define NR_IRQ         256     // IDT size

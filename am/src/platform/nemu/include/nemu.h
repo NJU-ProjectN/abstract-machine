@@ -3,7 +3,8 @@
 
 #include <klib-macros.h>
 
-#include ISA_H // "x86.h", "mips32.h", ...
+#include ISA_H // the macro `ISA_H` is defined in CFLAGS
+               // it will be expanded as "x86/x86.h", "mips/mips32.h", ...
 
 #if defined(__ISA_X86__)
 # define nemu_trap(code) asm volatile (".byte 0xd6" : :"a"(code))
@@ -15,22 +16,22 @@
 # error unsupported ISA __ISA__
 #endif
 
-#ifdef __ARCH_X86_NEMU
-# define SERIAL_PORT  0x3f8
-# define KBD_ADDR     0x60
-# define RTC_ADDR     0x48
-# define VGACTL_ADDR  0x100
-# define AUDIO_ADDR   0x200
+#if defined(__ARCH_X86_NEMU)
+# define DEVICE_BASE 0x0
 #else
-# define SERIAL_PORT  0xa10003f8
-# define KBD_ADDR     0xa1000060
-# define RTC_ADDR     0xa1000048
-# define VGACTL_ADDR  0xa1000100
-# define AUDIO_ADDR   0xa1000200
+# define DEVICE_BASE 0xa0000000
 #endif
 
-#define FB_ADDR         0xa0000000
-#define AUDIO_SBUF_ADDR 0xa0800000
+#define MMIO_BASE 0xa0000000
+
+#define SERIAL_PORT     (DEVICE_BASE + 0x00003f8)
+#define KBD_ADDR        (DEVICE_BASE + 0x0000060)
+#define RTC_ADDR        (DEVICE_BASE + 0x0000048)
+#define VGACTL_ADDR     (DEVICE_BASE + 0x0000100)
+#define AUDIO_ADDR      (DEVICE_BASE + 0x0000200)
+#define DISK_ADDR       (DEVICE_BASE + 0x0000300)
+#define FB_ADDR         (MMIO_BASE   + 0x1000000)
+#define AUDIO_SBUF_ADDR (MMIO_BASE   + 0x1200000)
 
 extern char _pmem_start;
 #define PMEM_SIZE (128 * 1024 * 1024)
@@ -38,7 +39,7 @@ extern char _pmem_start;
 #define NEMU_PADDR_SPACE \
   RANGE(&_pmem_start, PMEM_END), \
   RANGE(FB_ADDR, FB_ADDR + 0x200000), \
-  RANGE(0xa1000000, 0xa1000000 + 0x1000) /* serial, rtc, screen, keyboard */
+  RANGE(MMIO_BASE, MMIO_BASE + 0x1000) /* serial, rtc, screen, keyboard */
 
 typedef uintptr_t PTE;
 

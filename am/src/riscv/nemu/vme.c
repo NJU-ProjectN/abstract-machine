@@ -14,7 +14,7 @@ static Area segments[] = {      // Kernel memory mappings
 #define USER_SPACE RANGE(0x40000000, 0x80000000)
 
 static inline void set_satp(void *pdir) {
-  uintptr_t mode = 8ull << 60;
+  uintptr_t mode = 1ul << (__riscv_xlen - 1);
   asm volatile("csrw satp, %0" : : "r"(mode | ((uintptr_t)pdir >> 12)));
 }
 

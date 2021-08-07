@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <elf.h>
-#include <x86.h>
+#include <x86/x86.h>
 
 #define SECTSIZE 512
 #define ARGSIZE  1024

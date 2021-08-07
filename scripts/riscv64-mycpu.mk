@@ -4,23 +4,23 @@ CFLAGS        += $(COMMON_FLAGS) -static
 ASFLAGS       += $(COMMON_FLAGS) -O0
 LDFLAGS       += -melf64lriscv
 
-AM_SRCS := mycpu/start.S \
-           mycpu/trm.c \
-           mycpu/libgcc/muldi3.S \
-           mycpu/libgcc/div.S \
-           mycpu/ioe.c \
-           mycpu/timer.c \
-           mycpu/input.c \
-           mycpu/cte.c \
-           mycpu/trap.S \
-           mycpu/vme.c \
-           mycpu/mpe.c
+AM_SRCS := riscv/mycpu/start.S \
+           riscv/mycpu/trm.c \
+           riscv/mycpu/libgcc/muldi3.S \
+           riscv/mycpu/libgcc/div.S \
+           riscv/mycpu/ioe.c \
+           riscv/mycpu/timer.c \
+           riscv/mycpu/input.c \
+           riscv/mycpu/cte.c \
+           riscv/mycpu/trap.S \
+           platform/dummy/vme.c \
+           platform/dummy/mpe.c
 
 CFLAGS    += -fdata-sections -ffunction-sections
-LDFLAGS   += -T $(AM_HOME)/scripts/platform/nemu.ld --defsym=_pmem_start=0x80000000 --defsym=_entry_offset=0x0
+LDFLAGS   += -T $(AM_HOME)/scripts/linker.ld --defsym=_pmem_start=0x80000000 --defsym=_entry_offset=0x0
 LDFLAGS   += --gc-sections -e _start
 CFLAGS += -DMAINARGS=\"$(mainargs)\"
-.PHONY: $(AM_HOME)/am/src/mycpu/trm.c
+.PHONY: $(AM_HOME)/am/src/riscv/mycpu/trm.c
 
 image: $(IMAGE).elf
 	@$(OBJDUMP) -d $(IMAGE).elf > $(IMAGE).txt

@@ -1,4 +1,4 @@
-#include <x86.h>
+#include <x86/x86.h>
 #include "x86-qemu.h"
 
 .code32

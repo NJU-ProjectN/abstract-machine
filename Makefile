@@ -65,13 +65,10 @@ LINKAGE   = $(OBJS) \
 
 ## 3. General Compilation Flags
 
-### Enable Ccache acceleration when available
-CCACHE    = $(if $(shell which ccache),ccache,)
-
 ### (Cross) compilers, e.g., mips-linux-gnu-g++
-AS        = $(CCACHE) $(CROSS_COMPILE)gcc
-CC        = $(CCACHE) $(CROSS_COMPILE)gcc
-CXX       = $(CCACHE) $(CROSS_COMPILE)g++
+AS        = $(CROSS_COMPILE)gcc
+CC        = $(CROSS_COMPILE)gcc
+CXX       = $(CROSS_COMPILE)g++
 LD        = $(CROSS_COMPILE)ld
 OBJDUMP   = $(CROSS_COMPILE)objdump
 OBJCOPY   = $(CROSS_COMPILE)objcopy
@@ -81,11 +78,10 @@ READELF   = $(CROSS_COMPILE)readelf
 INC_PATH += $(WORK_DIR)/include $(addsuffix /include/, $(addprefix $(AM_HOME)/, $(LIBS)))
 INCFLAGS += $(addprefix -I, $(INC_PATH))
 
-CFLAGS   += -O2 -MMD -Wall -Werror -ggdb $(INCFLAGS) \
+CFLAGS   += -O2 -MMD -Wall -Werror $(INCFLAGS) \
             -D__ISA__=\"$(ISA)\" -D__ISA_$(shell echo $(ISA) | tr a-z A-Z)__ \
             -D__ARCH__=$(ARCH) -D__ARCH_$(shell echo $(ARCH) | tr a-z A-Z | tr - _) \
             -D__PLATFORM__=$(PLATFORM) -D__PLATFORM_$(shell echo $(PLATFORM) | tr a-z A-Z | tr - _) \
-            -DISA_H=\"$(ISA).h\" \
             -DARCH_H=\"arch/$(ARCH).h\" \
             -fno-asynchronous-unwind-tables -fno-builtin -fno-stack-protector \
             -Wno-main
@@ -100,7 +96,7 @@ ASFLAGS  += -MMD $(INCFLAGS)
 ### Fall back to native gcc/binutils if there is no cross compiler
 ifeq ($(wildcard $(shell which $(CC))),)
   $(info #  $(CC) not found; fall back to default gcc and binutils)
-  CROSS_COMPILE := 
+  CROSS_COMPILE :=
 endif
 
 ## 5. Compilation Rules

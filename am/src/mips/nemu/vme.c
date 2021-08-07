@@ -1,5 +1,4 @@
 #include <am.h>
-#include <mips32.h>
 #include <nemu.h>
 
 #define USER_SPACE RANGE(0x40000000, 0x80000000)

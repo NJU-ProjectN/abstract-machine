@@ -2,7 +2,8 @@
 #define ARCH_H__
 
 struct Context {
-  uintptr_t epc, cause, gpr[32], status;
+  // TODO: fix the order of these members to match trap.S
+  uintptr_t mepc, mcause, gpr[32], mstatus;
   void *pdir;
 };
 
@@ -11,5 +12,4 @@ struct Context {
 #define GPR3 gpr[0]
 #define GPR4 gpr[0]
 #define GPRx gpr[0]
-
 #endif

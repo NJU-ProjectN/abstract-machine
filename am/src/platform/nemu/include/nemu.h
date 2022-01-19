@@ -7,11 +7,11 @@
                // it will be expanded as "x86/x86.h", "mips/mips32.h", ...
 
 #if defined(__ISA_X86__)
-# define nemu_trap(code) asm volatile (".byte 0xd6" : :"a"(code))
+# define nemu_trap(code) asm volatile ("int3" : :"a"(code))
 #elif defined(__ISA_MIPS32__)
-# define nemu_trap(code) asm volatile ("move $v0, %0; .word 0xf0000000" : :"r"(code))
+# define nemu_trap(code) asm volatile ("move $v0, %0; sdbbp" : :"r"(code))
 #elif defined(__ISA_RISCV32__) || defined(__ISA_RISCV64__)
-# define nemu_trap(code) asm volatile("mv a0, %0; .word 0x0000006b" : :"r"(code))
+# define nemu_trap(code) asm volatile("mv a0, %0; ebreak" : :"r"(code))
 #elif
 # error unsupported ISA __ISA__
 #endif

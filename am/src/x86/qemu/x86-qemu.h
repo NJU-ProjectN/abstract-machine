@@ -70,6 +70,7 @@ struct trap_frame {
 extern volatile uint32_t *__am_lapic;
 extern int __am_ncpu;
 extern struct cpu_local __am_cpuinfo[MAX_CPU];
+extern uintptr_t *__am_kpt;
 
 #define CPU (&__am_cpuinfo[cpu_current()])
 

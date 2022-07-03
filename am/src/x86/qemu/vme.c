@@ -33,7 +33,7 @@ static const struct vm_area vm_areas[] = {
 };
 #define uvm_area (vm_areas[0].area)
 
-static uintptr_t *kpt;
+uintptr_t *__am_kpt;
 static void *(*pgalloc)(int size);
 static void (*pgfree)(void *);
 
@@ -92,7 +92,7 @@ bool vme_init(void *(*_pgalloc)(int size), void (*_pgfree)(void *)) {
   pgfree  = _pgfree;
 
 #if __x86_64__
-  kpt = (void *)PML4_ADDR;
+  __am_kpt = (void *)PML4_ADDR;
 #else
   AddrSpace as;
   as.ptr = NULL;
@@ -106,10 +106,10 @@ bool vme_init(void *(*_pgalloc)(int size), void (*_pgfree)(void *)) {
       }
     }
   }
-  kpt = (void *)baseof((uintptr_t)as.ptr);
+  __am_kpt = (void *)baseof((uintptr_t)as.ptr);
 #endif
 
-  set_cr3(kpt);
+  set_cr3(__am_kpt);
   set_cr0(get_cr0() | CR0_PG);
   return true;
 }
@@ -125,7 +125,7 @@ void protect(AddrSpace *as) {
            cur != (uintptr_t)vma->area.end;
            cur += (1L << info->shift)) {
         int index = indexof(cur, info);
-        upt[index] = kpt[index];
+        upt[index] = __am_kpt[index];
       }
     }
   }

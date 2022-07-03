@@ -151,6 +151,8 @@ Context* kcontext(Area kstack, void (*entry)(void *), void *arg) {
   ctx->eflags = FL_IF;
   ctx->esp    = (uintptr_t)kstack.end;
 #endif
+  // If vme_init() has not been called before, cr3 is zero.
+  ctx->cr3    = __am_kpt;
 
   ctx->GPR1 = (uintptr_t)arg;
   ctx->GPR2 = (uintptr_t)entry;

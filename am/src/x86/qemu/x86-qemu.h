@@ -93,6 +93,7 @@ void __am_percpu_init();
 Area __am_heap_init();
 void __am_lapic_init();
 void __am_othercpu_entry();
+void __am_othercpu_initvme();
 void __am_percpu_initirq();
 void __am_percpu_initgdt();
 void __am_percpu_initlapic();

@@ -25,6 +25,7 @@ bool mpe_init(void (*entry)()) {
 
 static void othercpu_entry() {
   __am_percpu_init();
+  __am_othercpu_initvme();
   xchg(&ap_ready, 1);
   call_user_entry();
 }

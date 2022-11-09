@@ -1,4 +1,5 @@
 ENTRY(_start)
+PHDRS { text PT_LOAD; data PT_LOAD; }
 
 SECTIONS {
   /* _pmem_start and _entry_offset are defined in LDFLAGS */
@@ -6,7 +7,7 @@ SECTIONS {
   .text : {
     *(entry)
     *(.text*)
-  }
+  } : text
   etext = .;
   _etext = .;
   .rodata : {
@@ -14,7 +15,7 @@ SECTIONS {
   }
   .data : {
     *(.data)
-  }
+  } : data
   edata = .;
   _data = .;
   .bss : {

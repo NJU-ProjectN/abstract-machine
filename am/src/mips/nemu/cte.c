@@ -4,8 +4,6 @@
 
 static Context* (*user_handler)(Event, Context*) = NULL;
 
-static inline bool get_CU0(Context *c) { return (c->status >> 28) & 0x1; }
-
 Context* __am_irq_handle(Context *c) {
   if (user_handler) {
     Event ev = {0};

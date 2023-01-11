@@ -32,8 +32,7 @@ void __am_percpu_init() {
 }
 
 void putch(char ch) {
-  #define COM1 0x3f8
-  outb(COM1, ch);
+  outb(COM1_ADDR, ch);
 }
 
 void halt(int code) {

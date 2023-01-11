@@ -4,18 +4,16 @@
 // UART
 // ====================================================
 
-#define COM1 0x3f8
-
 static int uart_init() {
-  outb(COM1 + 2, 0);
-  outb(COM1 + 3, 0x80);
-  outb(COM1 + 0, 115200 / 9600);
-  outb(COM1 + 1, 0);
-  outb(COM1 + 3, 0x03);
-  outb(COM1 + 4, 0);
-  outb(COM1 + 1, 0x01);
-  inb (COM1 + 2);
-  inb (COM1 + 0);
+  outb(COM1_ADDR + 2, 0);
+  outb(COM1_ADDR + 3, 0x80);
+  outb(COM1_ADDR + 0, 115200 / 9600);
+  outb(COM1_ADDR + 1, 0);
+  outb(COM1_ADDR + 3, 0x03);
+  outb(COM1_ADDR + 4, 0);
+  outb(COM1_ADDR + 1, 0x01);
+  inb (COM1_ADDR + 2);
+  inb (COM1_ADDR + 0);
   return 0;
 }
 
@@ -24,11 +22,11 @@ static void uart_config(AM_UART_CONFIG_T *cfg) {
 }
 
 static void uart_tx(AM_UART_TX_T *send) {
-  outb(COM1, send->data);
+  outb(COM1_ADDR, send->data);
 }
 
 static void uart_rx(AM_UART_RX_T *recv) {
-  recv->data = (inb(COM1 + 5) & 0x1) ? inb(COM1) : -1;
+  recv->data = (inb(COM1_ADDR + 5) & 0x1) ? inb(COM1_ADDR) : -1;
 }
 
 // Timer
@@ -40,8 +38,8 @@ static uint64_t uptsc;
 static void timer_rtc(AM_TIMER_RTC_T *rtc);
 
 static inline int read_rtc(int reg) {
-  outb(0x70, reg);
-  int ret = inb(0x71);
+  outb(RTC1_ADDR, reg);
+  int ret = inb(RTC2_ADDR);
   return (ret & 0xf) + (ret >> 4) * 10;
 }
 
@@ -135,8 +133,8 @@ static void input_config(AM_INPUT_CONFIG_T *cfg) {
 }
 
 static void input_keybrd(AM_INPUT_KEYBRD_T *ev) {
-  if (inb(0x64) & 0x1) {
-    int code = inb(0x60) & 0xff;
+  if (inb(PS2M_ADDR) & 0x1) {
+    int code = inb(PS2K_ADDR) & 0xff;
     ev->keydown = code < 128;
     ev->keycode = keylut[code & 0x7f];
   } else {
@@ -275,7 +273,7 @@ static void disk_status(AM_DISK_STATUS_T *status) {
 }
 
 static inline void wait_disk(void) {
-  while ((inb(0x1f7) & 0xc0) != 0x40);
+  while ((inb(DISK_STATUS_ADDR) & 0xc0) != 0x40);
 }
 
 static void disk_blkio(AM_DISK_BLKIO_T *bio) {
@@ -283,19 +281,19 @@ static void disk_blkio(AM_DISK_BLKIO_T *bio) {
   uint32_t *ptr = bio->buf;
   for (remain = bio->blkcnt; remain; remain--, blkno++) {
     wait_disk();
-    outb(0x1f2, 1);
-    outb(0x1f3, blkno);
-    outb(0x1f4, blkno >> 8);
-    outb(0x1f5, blkno >> 16);
-    outb(0x1f6, (blkno >> 24) | 0xe0);
-    outb(0x1f7, bio->write? 0x30 : 0x20);
+    outb(DISK_SEC_ADDR, 1);
+    outb(DISK_LBA_LOW_ADDR, blkno);
+    outb(DISK_LBA_MID_ADDR, blkno >> 8);
+    outb(DISK_LBA_HI_ADDR, blkno >> 16);
+    outb(DISK_LBA_TOP_ADDR, (blkno >> 24) | 0xe0);
+    outb(DISK_STATUS_ADDR, bio->write? 0x30 : 0x20);
     wait_disk();
     if (bio->write) {
       for (int i = 0; i < BLKSZ / 4; i ++)
-        outl(0x1f0, *ptr++);
+        outl(DISK_DATA_ADDR, *ptr++);
     } else {
       for (int i = 0; i < BLKSZ / 4; i ++)
-        *ptr++ = inl(0x1f0);
+        *ptr++ = inl(DISK_DATA_ADDR);
     }
   }
 }
@@ -427,8 +425,8 @@ void __am_lapic_eoi(void) {
 void __am_lapic_bootap(uint32_t apicid, void *addr) {
   int i;
   uint16_t *wrv;
-  outb(0x70, 0xF);
-  outb(0x71, 0x0A);
+  outb(RTC1_ADDR, 0xF);
+  outb(RTC2_ADDR, 0x0A);
   wrv = (unsigned short*)((0x40<<4 | 0x67));
   wrv[0] = 0;
   wrv[1] = (uintptr_t)addr >> 4;

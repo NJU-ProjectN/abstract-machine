@@ -11,6 +11,7 @@
 !Makefile
 !README
 !LICENSE
+!*.dts
 .*
 _*
 *~

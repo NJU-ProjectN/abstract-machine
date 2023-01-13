@@ -1,10 +1,5 @@
 AM_SRCS := platform/nemu/trm.c \
-           platform/nemu/ioe/ioe.c \
-           platform/nemu/ioe/timer.c \
-           platform/nemu/ioe/input.c \
-           platform/nemu/ioe/gpu.c \
-           platform/nemu/ioe/audio.c \
-           platform/nemu/ioe/disk.c \
+           platform/nemu/ioe.c \
            platform/nemu/mpe.c
 
 CFLAGS    += -fdata-sections -ffunction-sections

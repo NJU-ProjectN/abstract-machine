@@ -1,3 +1,4 @@
+timer:spike
 SERIAL_PORT     0xa00003f8  0x8
 KBD_ADDR        0xa0000060  0x4
 RTC_ADDR        0xa0000048  0x8

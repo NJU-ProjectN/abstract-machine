@@ -4,12 +4,7 @@ AM_SRCS := native/trm.c \
            native/trap.S \
            native/vme.c \
            native/mpe.c \
-           native/platform.c \
-           native/ioe/input.c \
-           native/ioe/timer.c \
-           native/ioe/gpu.c \
-           native/ioe/audio.c \
-           native/ioe/disk.c \
+           native/platform.c
 
 CFLAGS  += -fpie
 ASFLAGS += -fpie -pie

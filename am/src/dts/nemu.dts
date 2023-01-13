@@ -1,3 +1,4 @@
+audio:nemu,disk:nemu,gpu:nemu,input:nemu,timer:nemu
 MMIO,0xa0000000
 SERIAL,0xa00003f8
 KBD,0xa0000060

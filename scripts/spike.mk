@@ -2,7 +2,6 @@ include $(AM_HOME)/scripts/isa/riscv64.mk
 
 AM_SRCS := riscv/spike/trm.c \
            riscv/spike/ioe.c \
-           riscv/spike/timer.c \
            riscv/spike/start.S \
            riscv/spike/htif.S \
            platform/dummy/cte.c \

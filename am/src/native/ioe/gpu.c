@@ -36,7 +36,7 @@ void __am_gpu_init() {
 #else
       W * 2, H * 2,
 #endif
-      SDL_WINDOW_SHOWN);
+      SDL_WINDOW_OPENGL);
   surface = SDL_CreateRGBSurface(SDL_SWSURFACE, W, H, 32,
       RMASK, GMASK, BMASK, AMASK);
   SDL_AddTimer(1000 / FPS, texture_sync, NULL);

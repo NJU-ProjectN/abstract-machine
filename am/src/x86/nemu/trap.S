@@ -5,6 +5,8 @@
 .globl __am_vecnull;  __am_vecnull: pushl   $-1; jmp __am_asm_trap
 
 
+.globl __am_asm_trap
+.type __am_asm_trap, @function
 __am_asm_trap:
   pushal
 
@@ -20,3 +22,4 @@ __am_asm_trap:
   addl $4, %esp
 
   iret
+.size __am_asm_trap, .-__am_asm_trap

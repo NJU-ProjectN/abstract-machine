@@ -25,6 +25,7 @@ f(30) f(31)
 
 .set noat
 .globl __am_asm_trap
+.type __am_asm_trap, @function
 __am_asm_trap:
   move $k1, $sp
   addiu $sp, $sp, -CONTEXT_SIZE
@@ -69,3 +70,4 @@ __am_asm_trap:
 
   addiu $sp, $sp, CONTEXT_SIZE
   eret
+.size __am_asm_trap, .-__am_asm_trap

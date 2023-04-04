@@ -6,5 +6,6 @@ _start:
   move $fp, $zero
   la $sp, _stack_pointer
   jal _trm_init
+.size _start, .-_start
 
 .fill 0x200

@@ -23,6 +23,7 @@ f(30) f(31)
 
 .align 6
 .globl __am_asm_trap
+.type __am_asm_trap, @function
 __am_asm_trap:
   addi.w $sp, $sp, -CONTEXT_SIZE
 
@@ -48,3 +49,4 @@ __am_asm_trap:
 
   addi.w $sp, $sp, CONTEXT_SIZE
   ertn
+.size __am_asm_trap, .-__am_asm_trap

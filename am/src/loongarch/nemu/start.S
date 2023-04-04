@@ -6,3 +6,4 @@ _start:
   move $fp, $zero
   la.local $sp, _stack_pointer
   bl _trm_init
+.size _start, .-_start

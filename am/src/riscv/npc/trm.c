@@ -13,11 +13,13 @@ Area heap = RANGE(&_heap_start, PMEM_END);
 #define MAINARGS ""
 #endif
 static const char mainargs[] = MAINARGS;
+static volatile int exit_status = 0xdeadbeef;
 
 void putch(char ch) {
 }
 
 void halt(int code) {
+  exit_status = code;
   while (1);
 }
 

@@ -63,7 +63,11 @@ static void init_platform() {
   // create memory object and set up mapping to simulate the physical memory
   pmem_fd = memfd_create("pmem", 0);
   assert(pmem_fd != -1);
-  assert(0 == ftruncate(pmem_fd, PMEM_SIZE));
+  // use dynamic linking to avoid linking to the same function in RT-Thread
+  int (*ftruncate_libc)(int, off_t) = dlsym(RTLD_NEXT, "ftruncate");
+  assert(ftruncate_libc != NULL);
+  int ret2 = ftruncate_libc(pmem_fd, PMEM_SIZE);
+  assert(ret2 == 0);
 
   pmem = mmap(PMEM_START, PMEM_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC,
       MAP_SHARED | MAP_FIXED, pmem_fd, 0);
@@ -90,7 +94,6 @@ static void init_platform() {
   Elf64_Phdr *phdr = (void *)getauxval(AT_PHDR);
   int phnum = (int)getauxval(AT_PHNUM);
   int i;
-  int ret2;
   for (i = 0; i < phnum; i ++) {
     if (phdr[i].p_type == PT_LOAD && (phdr[i].p_flags & PF_W)) {
       // allocate temporary memory

@@ -79,11 +79,12 @@ READELF   = $(CROSS_COMPILE)readelf
 INC_PATH += $(WORK_DIR)/include $(addsuffix /include/, $(addprefix $(AM_HOME)/, $(LIBS)))
 INCFLAGS += $(addprefix -I, $(INC_PATH))
 
+ARCH_H := arch/$(ARCH).h
 CFLAGS   += -O2 -MMD -Wall -Werror $(INCFLAGS) \
             -D__ISA__=\"$(ISA)\" -D__ISA_$(shell echo $(ISA) | tr a-z A-Z)__ \
             -D__ARCH__=$(ARCH) -D__ARCH_$(shell echo $(ARCH) | tr a-z A-Z | tr - _) \
             -D__PLATFORM__=$(PLATFORM) -D__PLATFORM_$(shell echo $(PLATFORM) | tr a-z A-Z | tr - _) \
-            -DARCH_H=\"arch/$(ARCH).h\" \
+            -DARCH_H=\"$(ARCH_H)\" \
             -fno-asynchronous-unwind-tables -fno-builtin -fno-stack-protector \
             -Wno-main -U_FORTIFY_SOURCE
 CXXFLAGS +=  $(CFLAGS) -ffreestanding -fno-rtti -fno-exceptions

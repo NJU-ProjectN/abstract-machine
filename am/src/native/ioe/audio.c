@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <klib.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 static int rfd = -1, wfd = -1;
 static volatile int count = 0;

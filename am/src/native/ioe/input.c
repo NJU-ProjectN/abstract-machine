@@ -1,5 +1,5 @@
 #include <am.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #define KEYDOWN_MASK 0x8000
 

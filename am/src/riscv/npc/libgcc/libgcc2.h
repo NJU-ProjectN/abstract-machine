@@ -164,8 +164,8 @@ typedef		float TFtype	__attribute__ ((mode (TF)));
 typedef _Complex float TCtype	__attribute__ ((mode (TC)));
 #endif
 
-typedef int cmp_return_type __attribute__((mode (__libgcc_cmp_return__)));
-typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
+typedef int cmp_return_type; // __attribute__((mode (__libgcc_cmp_return__)));
+typedef int shift_count_type; // __attribute__((mode (__libgcc_shift_count__)));
 
 /* Make sure that we don't accidentally use any normal C language built-in
    type names in the first part of this file.  Instead we want to use *only*

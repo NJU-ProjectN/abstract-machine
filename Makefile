@@ -129,7 +129,7 @@ $(LIBS): %:
 	@$(MAKE) -s -C $(AM_HOME)/$* archive
 
 ### Rule (link): objects (`*.o`) and libraries (`*.a`) -> `IMAGE.elf`, the final ELF binary to be packed into image (ld)
-$(IMAGE).elf: $(OBJS) am $(LIBS)
+$(IMAGE).elf: $(OBJS) $(LIBS)
 	@echo + LD "->" $(IMAGE_REL).elf
 	@$(LD) $(LDFLAGS) -o $(IMAGE).elf --start-group $(LINKAGE) --end-group
 
@@ -146,7 +146,7 @@ $(ARCHIVE): $(OBJS)
 ### Build order control
 image: image-dep
 archive: $(ARCHIVE)
-image-dep: $(OBJS) am $(LIBS)
+image-dep: $(OBJS) $(LIBS)
 	@echo \# Creating image [$(ARCH)]
 .PHONY: image image-dep archive run $(LIBS)
 

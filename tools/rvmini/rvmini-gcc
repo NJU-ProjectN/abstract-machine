@@ -1,0 +1,3 @@
+#!/bin/bash
+
+bash rvmini-common.sh gcc $@

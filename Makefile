@@ -96,12 +96,6 @@ LDFLAGS  += -z noexecstack
 ### Paste in arch-specific configurations (e.g., from `scripts/x86_64-qemu.mk`)
 -include $(AM_HOME)/scripts/$(ARCH).mk
 
-### Fall back to native gcc/binutils if there is no cross compiler
-ifeq ($(wildcard $(shell which $(CC))),)
-  $(info #  $(CC) not found; fall back to default gcc and binutils)
-  CROSS_COMPILE :=
-endif
-
 ## 5. Compilation Rules
 
 ### Rule (compile): a single `.c` -> `.o` (gcc)

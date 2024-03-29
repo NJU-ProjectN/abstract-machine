@@ -14,7 +14,7 @@
 # define nemu_trap(code) asm volatile("mv a0, %0; ebreak" : :"r"(code))
 #elif defined(__ISA_LOONGARCH32R__)
 # define nemu_trap(code) asm volatile("move $a0, %0; break 0" : :"r"(code))
-#elif
+#else
 # error unsupported ISA __ISA__
 #endif
 

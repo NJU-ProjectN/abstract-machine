@@ -8,7 +8,7 @@ Context* __am_irq_handle(Context *c) {
   if (user_handler) {
     Event ev = {0};
     uintptr_t ecode = 0;
-    switch (ccode) {
+    switch (ecode) {
       default: ev.event = EVENT_ERROR; break;
     }
 

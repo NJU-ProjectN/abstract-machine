@@ -15,3 +15,5 @@ image: $(IMAGE).elf
 	@$(MAKE) -s -C $(BOOT_HOME)
 	@echo + CREATE "->" $(IMAGE_REL)
 	@( cat $(BOOT_HOME)/bootblock.o; head -c 1024 /dev/zero; cat $(IMAGE).elf ) > $(IMAGE)
+
+# TODO:i know little about qemu framework, so i left it unchanged

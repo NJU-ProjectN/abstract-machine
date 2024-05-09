@@ -16,4 +16,4 @@ LDFLAGS   += --gc-sections -e _start
 CFLAGS += -DMAINARGS=\"$(mainargs)\"
 .PHONY: $(AM_HOME)/am/src/riscv/spike/trm.c
 
-image: $(IMAGE).elf
+image: image-dep

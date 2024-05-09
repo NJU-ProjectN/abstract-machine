@@ -11,7 +11,7 @@ build-arg: image
 
 BOOT_HOME := $(AM_HOME)/am/src/x86/qemu/boot
 
-image: $(IMAGE).elf
+image: image-dep
 	@$(MAKE) -s -C $(BOOT_HOME)
 	@echo + CREATE "->" $(IMAGE_REL)
 	@( cat $(BOOT_HOME)/bootblock.o; head -c 1024 /dev/zero; cat $(IMAGE).elf ) > $(IMAGE)

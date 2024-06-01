@@ -64,27 +64,29 @@ static void load_elf32(Elf32_Ehdr *elf) {
 }
 
 void load_kernel(void) {
-  Elf32_Ehdr *elf32 = (void *)0x8000;
-  Elf64_Ehdr *elf64 = (void *)0x8000;
+  union {
+    Elf32_Ehdr elf32;
+    Elf64_Ehdr elf64;
+  } *u = (void *)0x8000;
   int is_ap = boot_record()->is_ap;
 
   if (!is_ap) {
     // load argument (string) to memory
     copy_from_disk((void *)MAINARG_ADDR, 1024, -1024);
     // load elf header to memory
-    copy_from_disk(elf32, 4096, 0);
-    if (elf32->e_machine == EM_X86_64) {
-      load_elf64(elf64);
+    copy_from_disk(u, 4096, 0);
+    if (u->elf32.e_machine == EM_X86_64) {
+      load_elf64(&u->elf64);
     } else {
-      load_elf32(elf32);
+      load_elf32(&u->elf32);
     }
   } else {
     // everything should be loaded
   }
 
-  if (elf32->e_machine == EM_X86_64) {
-    ((void(*)())(uint32_t)elf64->e_entry)();
+  if (u->elf32.e_machine == EM_X86_64) {
+    ((void(*)())(uint32_t)(u->elf64.e_entry))();
   } else {
-    ((void(*)())(uint32_t)elf32->e_entry)();
+    ((void(*)())(uint32_t)(u->elf32.e_entry))();
   }
 }

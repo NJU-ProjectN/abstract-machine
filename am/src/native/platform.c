@@ -150,7 +150,9 @@ static void init_platform() {
 
   // save the context template
   save_example_context();
+#ifdef __x86_64__
   uc_example.uc_mcontext.fpregs = NULL; // clear the FPU context
+#endif
   __am_get_intr_sigmask(&uc_example.uc_sigmask);
 
   // disable interrupts by default

@@ -7,6 +7,18 @@
 #include <klib.h>
 #include <klib-macros.h>
 
+#ifdef __x86_64__
+#define REG_PC(uc)   (uc)->uc_mcontext.gregs[REG_RIP]
+#define REG_SP(uc)   (uc)->uc_mcontext.gregs[REG_RSP]
+#define REG_GPR1(uc) (uc)->uc_mcontext.gregs[REG_RDI]
+#elif __aarch64__
+#define REG_PC(uc)   (uc)->uc_mcontext.pc
+#define REG_SP(uc)   (uc)->uc_mcontext.sp
+#define REG_GPR1(uc) (uc)->uc_mcontext.regs[0]
+#else
+#error Unsupported architecture
+#endif
+
 void __am_get_example_uc(Context *r);
 void __am_get_intr_sigmask(sigset_t *s);
 int __am_is_sigmask_sti(sigset_t *s);

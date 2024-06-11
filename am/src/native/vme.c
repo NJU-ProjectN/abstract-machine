@@ -124,8 +124,8 @@ Context* ucontext(AddrSpace *as, Area kstack, void *entry) {
   Context *c = (Context*)kstack.end - 1;
 
   __am_get_example_uc(c);
-  c->uc.uc_mcontext.gregs[REG_RIP] = (uintptr_t)entry;
-  c->uc.uc_mcontext.gregs[REG_RSP] = (uintptr_t)USER_SPACE.end;
+  REG_PC(&c->uc) = (uintptr_t)entry;
+  REG_SP(&c->uc) = (uintptr_t)USER_SPACE.end;
 
   int ret = sigemptyset(&(c->uc.uc_sigmask)); // enable interrupt
   assert(ret == 0);

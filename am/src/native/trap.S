@@ -19,4 +19,11 @@ __am_kcontext_start:
   and sp, x2, #0xfffffffffffffff0
   br x1
   bl __am_panic_on_return
+#elif __riscv
+  // See riscv ABI manual for more details
+  // https://github.com/riscv-non-isa/riscv-elf-psabi-doc
+  addi sp, sp, -16
+  andi sp, sp, ~15
+  jalr a1
+  jal  __am_panic_on_return
 #endif

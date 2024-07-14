@@ -8,13 +8,17 @@
 #include <klib-macros.h>
 
 #ifdef __x86_64__
-#define REG_PC(uc)   (uc)->uc_mcontext.gregs[REG_RIP]
-#define REG_SP(uc)   (uc)->uc_mcontext.gregs[REG_RSP]
-#define REG_GPR1(uc) (uc)->uc_mcontext.gregs[REG_RDI]
+#define AM_REG_PC(uc)   (uc)->uc_mcontext.gregs[REG_RIP]
+#define AM_REG_SP(uc)   (uc)->uc_mcontext.gregs[REG_RSP]
+#define AM_REG_GPR1(uc) (uc)->uc_mcontext.gregs[REG_RDI]
 #elif __aarch64__
-#define REG_PC(uc)   (uc)->uc_mcontext.pc
-#define REG_SP(uc)   (uc)->uc_mcontext.sp
-#define REG_GPR1(uc) (uc)->uc_mcontext.regs[0]
+#define AM_REG_PC(uc)   (uc)->uc_mcontext.pc
+#define AM_REG_SP(uc)   (uc)->uc_mcontext.sp
+#define AM_REG_GPR1(uc) (uc)->uc_mcontext.regs[0]
+#elif __riscv && __riscv_xlen == 64
+#define AM_REG_PC(uc)   (uc)->uc_mcontext.__gregs[REG_PC]
+#define AM_REG_SP(uc)   (uc)->uc_mcontext.__gregs[REG_SP]
+#define AM_REG_GPR1(uc) (uc)->uc_mcontext.__gregs[REG_A0]
 #else
 #error Unsupported architecture
 #endif

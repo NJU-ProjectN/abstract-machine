@@ -21,7 +21,7 @@ static void irq_handle(Context *c) {
 
   if (thiscpu->ev.event == EVENT_ERROR) {
     printf("Unhandle signal '%s' at pc = %p, badaddr = %p, cause = 0x%x\n",
-      thiscpu->ev.msg, REG_PC(&c->uc), thiscpu->ev.ref, thiscpu->ev.cause);
+      thiscpu->ev.msg, AM_REG_PC(&c->uc), thiscpu->ev.ref, thiscpu->ev.cause);
     assert(0);
   }
   c = user_handler(thiscpu->ev, c);
@@ -36,7 +36,7 @@ static void irq_handle(Context *c) {
 }
 
 static void setup_stack(uintptr_t event, ucontext_t *uc) {
-  void *rip = (void *)REG_PC(uc);
+  void *rip = (void *)AM_REG_PC(uc);
   extern uint8_t _start, _etext;
   int trap_from_user = __am_in_userspace(rip);
   int signal_safe = IN_RANGE(rip, RANGE(&_start, &_etext)) || trap_from_user ||
@@ -59,10 +59,10 @@ static void setup_stack(uintptr_t event, ucontext_t *uc) {
 
   // skip the instructions causing SIGSEGV for syscall
   if (event == EVENT_SYSCALL) { rip += SYSCALL_INSTR_LEN; }
-  REG_PC(uc) = (uintptr_t)rip;
+  AM_REG_PC(uc) = (uintptr_t)rip;
 
   // switch to kernel stack if we were previously in user space
-  uintptr_t rsp = trap_from_user ? thiscpu->ksp : REG_SP(uc);
+  uintptr_t rsp = trap_from_user ? thiscpu->ksp : AM_REG_SP(uc);
   rsp -= sizeof(Context);
 #ifdef __x86_64__
   // keep (rsp + 8) % 16 == 0 to support SSE
@@ -77,17 +77,17 @@ static void setup_stack(uintptr_t event, ucontext_t *uc) {
   __am_get_intr_sigmask(&uc->uc_sigmask);
 
   // call irq_handle after returning from the signal handler
-  REG_GPR1(uc) = (uintptr_t)c;
-  REG_PC(uc)   = (uintptr_t)irq_handle;
-  REG_SP(uc)   = (uintptr_t)c;
+  AM_REG_GPR1(uc) = (uintptr_t)c;
+  AM_REG_PC(uc)   = (uintptr_t)irq_handle;
+  AM_REG_SP(uc)   = (uintptr_t)c;
 }
 
 static void iret(ucontext_t *uc) {
-  Context *c = (void *)REG_GPR1(uc);
+  Context *c = (void *)AM_REG_GPR1(uc);
   // restore the context
   *uc = c->uc;
   thiscpu->ksp = c->ksp;
-  if (__am_in_userspace((void *)REG_PC(uc))) __am_pmem_protect();
+  if (__am_in_userspace((void *)AM_REG_PC(uc))) __am_pmem_protect();
 }
 
 static void sig_handler(int sig, siginfo_t *info, void *ucontext) {
@@ -168,8 +168,8 @@ Context* kcontext(Area kstack, void (*entry)(void *), void *arg) {
   Context *c = (Context*)kstack.end - 1;
 
   __am_get_example_uc(c);
-  REG_PC(&c->uc) = (uintptr_t)__am_kcontext_start;
-  REG_SP(&c->uc) = (uintptr_t)kstack.end;
+  AM_REG_PC(&c->uc) = (uintptr_t)__am_kcontext_start;
+  AM_REG_SP(&c->uc) = (uintptr_t)kstack.end;
 
   int ret = sigemptyset(&(c->uc.uc_sigmask)); // enable interrupt
   assert(ret == 0);

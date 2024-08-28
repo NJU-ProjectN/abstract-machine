@@ -1,5 +1,5 @@
 #include <am.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <fenv.h>
 
 //#define MODE_800x600

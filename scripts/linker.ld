@@ -14,7 +14,7 @@ SECTIONS {
     *(.rodata*)
   }
   .data : {
-    *(.data)
+    *(.data*)
   } : data
   edata = .;
   _data = .;

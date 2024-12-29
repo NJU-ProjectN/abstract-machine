@@ -120,7 +120,7 @@ static int keylut[128] = {
   [0x2b] = AM_KEY_BACKSLASH,            [0x2c] = AM_KEY_Z, [0x2d] = AM_KEY_X,
   [0x2e] = AM_KEY_C, [0x2f] = AM_KEY_V, [0x30] = AM_KEY_B, [0x31] = AM_KEY_N,
   [0x32] = AM_KEY_M,     [0x33] = AM_KEY_COMMA,  [0x34] = AM_KEY_PERIOD,
-  [0x35] = AM_KEY_SLASH, [0x36] = AM_KEY_RSHIFT, [0x38] = AM_KEY_LALT,
+  [0x35] = AM_KEY_SLASH, [0x36] = AM_KEY_RSHIFT, [0x37] = AM_KEY_LALT,
   [0x38] = AM_KEY_RALT,  [0x39] = AM_KEY_SPACE,  [0x3a] = AM_KEY_CAPSLOCK,
   [0x3b] = AM_KEY_F1,    [0x3c] = AM_KEY_F2,     [0x3d] = AM_KEY_F3,
   [0x3e] = AM_KEY_F4,    [0x3f] = AM_KEY_F5,     [0x40] = AM_KEY_F6,

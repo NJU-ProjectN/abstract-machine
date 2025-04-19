@@ -620,7 +620,8 @@ def_itype(xori, xor)
 .endm
 
 .macro j addr
-  call_template tp, \addr
+  la tp, \addr
+  jalr zero, tp
 .endm
 
 .macro not rd, rs1

@@ -123,7 +123,7 @@ $(ARCHIVE): $(OBJS)
 else
 # $(1): library name
 define LIB_TEMPLATE =
-$$(AM_HOME)/$(1)/build/$(1)-$$(ARCH).a:
+$$(AM_HOME)/$(1)/build/$(1)-$$(ARCH).a: force
 	@$$(MAKE) -s -C $$(AM_HOME)/$(1) archive
 LINKAGE += $$(AM_HOME)/$(1)/build/$(1)-$$(ARCH).a
 endef
@@ -152,6 +152,10 @@ image: image-dep
 archive: $(ARCHIVE)
 image-dep: $(IMAGE).elf
 .PHONY: image image-dep archive run
+
+### Force to rebuild a rule
+force:
+.PHONY: force
 
 ### Clean a single project (remove `build/`)
 clean:

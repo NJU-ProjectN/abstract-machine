@@ -38,8 +38,6 @@ Limitation:
 
 .section .rodata
 .align 8
-.weak _check_same_array
-_check_same_array: .fill 256, 1, 0
 .weak _same_result_table
 _same_result_table: .byte 1, 0, 0, 0, 0, 0, 0, 0
 
@@ -86,6 +84,10 @@ _logic_shift_table:
     rtype_name \rd, \rs1, tp; \
   .endm
 
+.section .data
+.align 8
+.weak _check_same_array
+_check_same_array: .fill 256, 1, 0
 
 .macro call_template r, addr
   la \r, \addr

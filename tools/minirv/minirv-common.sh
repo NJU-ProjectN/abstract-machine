@@ -14,11 +14,12 @@ fi
 
 # replace pseudo instructions for load/store
 sp="[[:space:]]*"
+sp_require="[[:space:]]+"
 reg="[[:alnum:]]+"
 comma="$sp,$sp"
 symbol="[[:alnum:]\._]+"
-sed -E -i -e "s/(l[bhw]u?)${sp}(${reg})${comma}(${symbol})(${sp}[-+]${sp}${symbol})?${sp}\$/la \2, \3\4; \1 \2, 0(\2);/" \
-          -e "s/(s[bhw])${sp}(${reg})${comma}(${symbol})(${sp}[-+]${sp}${symbol})?${comma}(${reg})${sp}\$/la \5, \3\4; \1 \2, 0(\5);/" $dst_S
+sed -E -i -e "s/(l[bhw]u?)${sp_require}(${reg})${comma}(${symbol})(${sp}[-+]${sp}${symbol})?${sp}\$/la \2, \3\4; \1 \2, 0(\2);/" \
+          -e "s/(s[bhw])${sp_require}(${reg})${comma}(${symbol})(${sp}[-+]${sp}${symbol})?${comma}(${reg})${sp}\$/la \5, \3\4; \1 \2, 0(\5);/" $dst_S
 
 # insert inst-replace.h to each .h files
 minirv_path=$AM_HOME/tools/minirv

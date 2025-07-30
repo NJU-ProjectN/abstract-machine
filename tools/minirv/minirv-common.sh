@@ -16,7 +16,7 @@ fi
 sp="[[:space:]]*"
 reg="[[:alnum:]]+"
 comma="$sp,$sp"
-symbol="[[:alnum:]_]+"
+symbol="[[:alnum:]\._]+"
 sed -E -i -e "s/(l[bhw]u?)${sp}(${reg})${comma}(${symbol})(${sp}[-+]${sp}${symbol})?${sp}\$/la \2, \3\4; \1 \2, 0(\2);/" \
           -e "s/(s[bhw])${sp}(${reg})${comma}(${symbol})(${sp}[-+]${sp}${symbol})?${comma}(${reg})${sp}\$/la \5, \3\4; \1 \2, 0(\5);/" $dst_S
 

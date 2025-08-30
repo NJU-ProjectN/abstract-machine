@@ -86,7 +86,7 @@ _logic_shift_table:
 
 .section .data
 .align 8
-.weak _check_same_array
+.weak _check_same_array  # unnecessary to initialize
 _check_same_array: .fill 256, 1, 0
 
 .macro call_template r, addr

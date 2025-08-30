@@ -29,3 +29,6 @@ flock $minirv_path/.lock -c "test -e $lut_bin_path || (cd $minirv_path && gcc ge
 
 src_dir=`dirname $src`
 riscv64-linux-gnu-gcc -I$src_dir $flags -D_LUT_BIN_PATH=\"$lut_bin_path\" -Wno-trigraphs -c -o $dst $dst_S
+
+# set a non-standard extension flag in e_flags to indicate minirv
+/bin/echo -ne '\x80' | dd of=$dst bs=1 seek=39 count=1 conv=notrunc 2> /dev/null

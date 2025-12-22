@@ -6,7 +6,7 @@ cc=$1
 flags=${*: 2:$#-4}
 
 dst_S=${dst%.o}.S
-if [[ "$src" == *.S ]] then
+if [[ "$src" == *.S ]] ; then
   cp $src $dst_S
 else
   riscv64-linux-gnu-$cc $flags -S -o $dst_S $src

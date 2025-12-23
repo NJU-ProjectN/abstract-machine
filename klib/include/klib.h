@@ -4,6 +4,7 @@
 #include <am.h>
 #include <stddef.h>
 #include <stdarg.h>
+#include <klib-macros.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,13 +43,7 @@ int    vsnprintf (char *str, size_t size, const char *format, va_list ap);
 #ifdef NDEBUG
   #define assert(ignore) ((void)0)
 #else
-  #define assert(cond) \
-    do { \
-      if (!(cond)) { \
-        printf("Assertion fail at %s:%d\n", __FILE__, __LINE__); \
-        halt(1); \
-      } \
-    } while (0)
+  #define assert(cond) panic_on(!(cond), "Assertion `" TOSTRING(cond) "' failed")
 #endif
 
 #ifdef __cplusplus

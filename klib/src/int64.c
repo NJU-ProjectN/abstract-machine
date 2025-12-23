@@ -347,8 +347,6 @@ uint32_t __inline __builtin_clzll(uint64_t value) {
 #define __builtin_clzl __builtin_clzll
 #endif /* defined(_MSC_VER) && !defined(__clang__) */
 
-#include <am.h>
-
 #if !defined(__ARCH_RISCV64_MYCPU)
 /* Returns: a / b */
 

@@ -4,6 +4,14 @@
 #include <unistd.h>
 #include <assert.h>
 #include <errno.h>
+#include <termios.h>
+#include <stdlib.h>
+
+static struct termios orig_termios;
+
+void __am_uart_cleanup() {
+  tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
+}
 
 void __am_uart_init() {
   int ret = fcntl(STDIN_FILENO, F_GETFL);
@@ -11,6 +19,16 @@ void __am_uart_init() {
   int flag = ret | O_NONBLOCK;
   ret = fcntl(STDIN_FILENO, F_SETFL, flag);
   assert(ret != -1);
+  
+  struct termios new_termios;
+  tcgetattr(STDIN_FILENO, &orig_termios);
+  atexit(__am_uart_cleanup); 
+
+  new_termios = orig_termios;
+  
+  new_termios.c_lflag &= ~(ICANON | ECHO);
+  
+  tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
 }
 
 void __am_uart_config(AM_UART_CONFIG_T *cfg) {

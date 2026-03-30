@@ -52,7 +52,7 @@ char *strchr(const char *s, int c) {
 }
 
 char *strrchr(const char *s, int c) {
-  const char *p = s + strlen(s) + 1;
+  const char *p = s + strlen(s);
   do {
     if (*p == c) return (char *)p;
     if (s == p) break;

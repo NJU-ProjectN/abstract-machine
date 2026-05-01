@@ -347,6 +347,67 @@ uint32_t __inline __builtin_clzll(uint64_t value) {
 #define __builtin_clzl __builtin_clzll
 #endif /* defined(_MSC_VER) && !defined(__clang__) */
 
+// Adapted from Figure 3-40 of The PowerPC Compiler Writer's Guide
+static __inline du_int __udivXi3(du_int n, du_int d)
+{
+    const unsigned N = sizeof(du_int) * CHAR_BIT;
+    // d == 0 cases are unspecified.
+    unsigned sr = (d ? __builtin_clzll(d) : N) - (n ? __builtin_clzll(n) : N);
+    // 0 <= sr <= N - 1 or sr is very large.
+    if (sr > N - 1)
+        return 0;
+    if (sr == N - 1)
+        return n;
+    ++sr;
+    // 1 <= sr <= N - 1. Shifts do not trigger UB.
+    du_int r = n >> sr;
+    n <<= N - sr;
+    du_int carry = 0;
+    for (; sr > 0; --sr)
+    {
+        r = (r << 1) | (n >> (N - 1));
+        n = (n << 1) | carry;
+        // Branch-less version of:
+        // carry = 0;
+        // if (r >= d) r -= d, carry = 1;
+        const di_int s = (di_int)(d - r - 1) >> (N - 1);
+        carry = s & 1;
+        r -= d & s;
+    }
+    n = (n << 1) | carry;
+    return n;
+}
+
+// Mostly identical to __udivXi3 but the return values are different.
+static __inline du_int __umodXi3(du_int n, du_int d)
+{
+    const unsigned N = sizeof(du_int) * CHAR_BIT;
+    // d == 0 cases are unspecified.
+    unsigned sr = (d ? __builtin_clzll(d) : N) - (n ? __builtin_clzll(n) : N);
+    // 0 <= sr <= N - 1 or sr is very large.
+    if (sr > N - 1)
+        return n;
+    if (sr == N - 1)
+        return 0;
+    ++sr;
+    // 1 <= sr <= N - 1. Shifts do not trigger UB.
+    du_int r = n >> sr;
+    n <<= N - sr;
+    du_int carry = 0;
+    for (; sr > 0; --sr)
+    {
+        r = (r << 1) | (n >> (N - 1));
+        n = (n << 1) | carry;
+        // Branch-less version of:
+        // carry = 0;
+        // if (r >= d) r -= d, carry = 1;
+        const di_int s = (di_int)(d - r - 1) >> (N - 1);
+        carry = s & 1;
+        r -= d & s;
+    }
+    return r;
+}
+
 #if !defined(__ARCH_RISCV64_MYCPU)
 /* Returns: a / b */
 
@@ -392,7 +453,7 @@ __moddi3(di_int a, di_int b)
 COMPILER_RT_ABI du_int
 __udivdi3(du_int a, du_int b)
 {
-    return __udivmoddi4(a, b, 0);
+    return __udivXi3(a, b);
 }
 
 /* Returns: a % b */
@@ -400,9 +461,7 @@ __udivdi3(du_int a, du_int b)
 COMPILER_RT_ABI du_int
 __umoddi3(du_int a, du_int b)
 {
-    du_int r;
-    __udivmoddi4(a, b, &r);
-    return r;
+    return __umodXi3(a, b);
 }
 #endif
 

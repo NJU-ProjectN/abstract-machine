@@ -10,6 +10,16 @@
 extern "C" {
 #endif
 
+// glibc >= 2.43 enables C23 type-generic strchr/strrchr macros when
+// _GNU_SOURCE is defined (e.g. by `sdl2-config --cflags`).  They conflict
+// with the plain prototypes below, so drop them here.
+#ifdef strchr
+# undef strchr
+#endif
+#ifdef strrchr
+# undef strrchr
+#endif
+
 //#define __NATIVE_USE_KLIB__
 
 // string.h

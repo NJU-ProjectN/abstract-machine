@@ -20,11 +20,11 @@ const int disp_w = 400, disp_h = 300;
 
 static SDL_Window *window = NULL;
 static SDL_Surface *surface = NULL;
+static Uint32 last_sync = 0;
 
-static Uint32 texture_sync(Uint32 interval, void *param) {
+static void texture_sync(void) {
   SDL_BlitScaled(surface, NULL, SDL_GetWindowSurface(window), NULL);
   SDL_UpdateWindowSurface(window);
-  return interval;
 }
 
 void __am_gpu_init() {
@@ -34,7 +34,6 @@ void __am_gpu_init() {
       WINDOW_W, WINDOW_H, SDL_WINDOW_OPENGL);
   surface = SDL_CreateRGBSurface(SDL_SWSURFACE, disp_w, disp_h, 32,
       RMASK, GMASK, BMASK, AMASK);
-  SDL_AddTimer(1000 / FPS, texture_sync, NULL);
 }
 
 void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
@@ -58,4 +57,14 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
   SDL_Rect rect = { .x = x, .y = y };
   SDL_BlitSurface(s, NULL, surface, &rect);
   SDL_FreeSurface(s);
+
+  // Present the surface from this (main) thread.  SDL video functions must
+  // not be called from an SDL timer thread, and the window surface must not
+  // be updated concurrently with the blit above (this crashes on systems
+  // where SDL2 is emulated on top of SDL3, e.g. sdl2-compat).
+  Uint32 now = SDL_GetTicks();
+  if (now - last_sync >= 1000 / FPS) {
+    last_sync = now;
+    texture_sync();
+  }
 }

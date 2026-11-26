@@ -12,7 +12,11 @@ AM_SRCS := native/trm.c \
            native/ioe/audio.c \
            native/ioe/disk.c \
 
-CFLAGS  += -fpie $(shell sdl2-config --cflags)
+# Some sdl2-config versions inject -D_GNU_SOURCE=1.  With glibc >= 2.43 that
+# enables ISO C23 features (e.g. the type-generic strchr/strrchr macros) and
+# also clashes with sources that define _GNU_SOURCE themselves.  Drop it.
+SDL_CFLAGS := $(filter-out -D_GNU_SOURCE%, $(shell sdl2-config --cflags))
+CFLAGS  += -fpie $(SDL_CFLAGS)
 ASFLAGS += -fpie -pie
 comma = ,
 LDFLAGS_CXX = $(addprefix -Wl$(comma), $(LDFLAGS)) -pie -ldl $(shell sdl2-config --libs)
